@@ -1,0 +1,176 @@
+{
+  "name": "declaracao-importacao",
+  "description": "Extrato da Declaração de Importação (DI). Quadros com rótulos repetidos (CNPJ, Valor a Recolher...), tabelas e adições.",
+  "fields": [
+    { "name": "numeroDeclaracao", "type": "labelRight", "label": "Declaração:", "required": true },
+    { "name": "dataRegistro", "type": "labelRight", "label": "Data do Registro:", "dataType": "date" },
+    { "name": "unidadeDespacho", "type": "regex", "pattern": "^SECRETARIA DA RECEITA FEDERAL.*\\n(?<value>.+)$" },
+    { "name": "modalidadeDespacho", "type": "labelRight", "label": "Modalidade do Despacho:" },
+    { "name": "quantidadeAdicoes", "type": "labelRight", "label": "Quantidade de Adições:", "dataType": "integer" },
+    {
+      "name": "importador",
+      "type": "group",
+      "description": "O rótulo 'CNPJ:' aparece em vários quadros; o group limita a busca ao quadro 'Importador'",
+      "start": "^Importador$",
+      "end": "^Adquirente da Mercadoria",
+      "fields": [
+        { "name": "cnpj", "type": "labelRight", "label": "CNPJ:" },
+        { "name": "nome", "type": "labelRight", "label": "CNPJ:", "take": "line", "valuePattern": "^\\S+ (?<value>.+)$" }
+      ]
+    },
+    {
+      "name": "adquirente",
+      "type": "group",
+      "start": "^Adquirente da Mercadoria",
+      "end": "^Representante Legal",
+      "fields": [
+        { "name": "cnpj", "type": "labelRight", "label": "CNPJ:" },
+        { "name": "nome", "type": "labelRight", "label": "CNPJ:", "take": "line", "valuePattern": "^\\S+ (?<value>.+)$" }
+      ]
+    },
+    {
+      "name": "representanteLegal",
+      "type": "group",
+      "start": "^Representante Legal",
+      "end": "^Carga$",
+      "fields": [
+        { "name": "cpf", "type": "labelRight", "label": "CPF:" },
+        { "name": "nome", "type": "labelRight", "label": "CPF:", "take": "line", "valuePattern": "^\\S+ (?<value>.+)$" }
+      ]
+    },
+    {
+      "name": "carga",
+      "type": "group",
+      "start": "^Carga$",
+      "end": "^Valores$",
+      "fields": [
+        { "name": "tipoManifesto", "type": "labelRight", "label": "Tipo do Manifesto:" },
+        { "name": "numeroManifesto", "type": "labelRight", "label": "Número do Manifesto:" },
+        { "name": "recintoAduaneiro", "type": "labelRight", "label": "Recinto Aduaneiro:" },
+        { "name": "armazem", "type": "labelRight", "label": "Armazém:" },
+        { "name": "embalagem", "type": "labelRight", "label": "Embalagem:" },
+        { "name": "quantidade", "type": "labelRight", "label": "Quantidade:", "dataType": "integer" },
+        { "name": "pesoBrutoKg", "type": "labelRight", "label": "Peso Bruto:", "valuePattern": "[\\d.]+,\\d+", "dataType": "decimal" },
+        { "name": "pesoLiquidoKg", "type": "labelRight", "label": "Peso Líquido:", "valuePattern": "[\\d.]+,\\d+", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "valores",
+      "type": "table",
+      "description": "A 1ª coluna não tem cabeçalho: usamos limites fixos (left/right) em pontos",
+      "headerPattern": "^Moeda Valor$",
+      "rowPattern": ":",
+      "end": "^Tributos$",
+      "columns": [
+        { "name": "item", "left": 0, "right": 200, "transforms": [ "upper" ], "valuePattern": "^(?<value>[^:]+)" },
+        { "name": "moeda", "header": "Moeda" },
+        { "name": "valor", "header": "Valor", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "tributos",
+      "type": "table",
+      "headerPattern": "^Suspenso Recolhido$",
+      "rowPattern": ":",
+      "end": "^Data da Emissão",
+      "columns": [
+        { "name": "tributo", "left": 0, "right": 200, "valuePattern": "^(?<value>[^:]+)" },
+        { "name": "suspenso", "header": "Suspenso", "dataType": "decimal" },
+        { "name": "recolhido", "header": "Recolhido", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "dadosComplementares",
+      "type": "group",
+      "start": "^Dados Complementares",
+      "end": "^Alertas e Erros",
+      "ignoreLines": [ "^Declaração: " ],
+      "fields": [
+        { "name": "referenciaInterna", "type": "labelRight", "label": "N/REF :" },
+        { "name": "faturaComercial", "type": "labelRight", "label": "FATURA COMERCIAL :" },
+        { "name": "conhecimentoCarga", "type": "labelRight", "label": "CONHECIMENTO DE CARGA :" },
+        { "name": "veiculo", "type": "labelRight", "label": "VEICULO :" },
+        { "name": "dataChegada", "type": "labelRight", "label": "DATA CHEGADA :", "dataType": "date", "format": "dd/MM/yy" },
+        { "name": "containers", "type": "labelRight", "label": "CONTAINER :" },
+        {
+          "name": "despachantes",
+          "type": "regex",
+          "description": "all=true retorna TODAS as linhas 'Nome - CPF. 000.000.000-00' como array",
+          "pattern": "^(?<nome>[^\\n]+?) - CPF\\. (?<cpf>\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2})$",
+          "all": true
+        },
+        { "name": "valorAduaneiro", "type": "regex", "pattern": "^Vr\\.Aduaneiro R\\$ (?<value>[\\d.]+,\\d{2})", "dataType": "decimal" },
+        { "name": "taxaSiscomex", "type": "regex", "pattern": "SISCOMEX\\.+R\\$ (?<value>[\\d.]+,\\d{2})", "dataType": "decimal" },
+        { "name": "totalTributosRecolhidos", "type": "regex", "pattern": "^Total \\.+R\\$ (?<value>[\\d.]+,\\d{2})", "dataType": "decimal" },
+        { "name": "marinhaMercante", "type": "regex", "pattern": "^MARINHA MERCANTE R\\$ (?<value>[\\d.]+,\\d{2})", "dataType": "decimal" },
+        { "name": "valorIcms", "type": "regex", "pattern": "Valor Total do ICMS .*R\\$ (?<value>[\\d.]+,\\d{2})", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "adicoes",
+      "type": "group",
+      "start": "^Adição: ",
+      "repeat": true,
+      "ignoreLines": [ "^Declaração: " ],
+      "fields": [
+        { "name": "numero", "type": "regex", "pattern": "^Adição: .* / (?<value>\\d+)$" },
+        { "name": "exportador", "type": "labelRight", "label": "Nome:" },
+        { "name": "paisOrigem", "type": "labelRight", "label": "País de Origem:" },
+        { "name": "ncm", "type": "labelRight", "labelPattern": "^NCM\\b", "valuePattern": "^[\\d.]+" },
+        { "name": "incoterm", "type": "labelRight", "label": "INCOTERM:" },
+        { "name": "vcmv", "type": "labelRight", "label": "VCMV:", "dataType": "decimal" },
+        { "name": "pesoLiquidoKg", "type": "labelRight", "label": "Peso Líquido da Adição:", "valuePattern": "[\\d.]+,\\d+", "dataType": "decimal" },
+        { "name": "quantidade", "type": "labelRight", "label": "Qtde:", "valuePattern": "[\\d.]+,\\d+", "dataType": "decimal" },
+        { "name": "valorUnitario", "type": "labelRight", "label": "VUCV:", "valuePattern": "[\\d.]+,\\d+", "dataType": "decimal" },
+        {
+          "name": "descricaoTecnica",
+          "type": "regex",
+          "pattern": "DESCRIÇÃO TÉCNICA DO PRODUTO: (?<value>[\\s\\S]*?)\\n^FINALIDADE"
+        },
+        {
+          "name": "ipi",
+          "type": "group",
+          "description": "'Valor a Recolher:' se repete em cada imposto; cada group delimita um quadro",
+          "start": "^Imposto sobre Produtos Industrializados",
+          "end": "^Dados Gerais",
+          "fields": [
+            { "name": "aliquota", "type": "labelRight", "label": "Alíquota Advalorem (TIPI)", "dataType": "decimal" },
+            { "name": "valorARecolher", "type": "labelRight", "label": "Valor a Recolher:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" }
+          ]
+        },
+        {
+          "name": "importacao",
+          "type": "group",
+          "start": "^Imposto de Importação$",
+          "end": "^Imposto sobre Produtos",
+          "fields": [
+            { "name": "regimeTributacao", "type": "labelRight", "label": "Regime de Tributação:" },
+            { "name": "valorARecolher", "type": "labelRight", "label": "Valor a Recolher:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" }
+          ]
+        },
+        { "name": "baseCalculoPisCofins", "type": "labelRight", "label": "Base de Cálculo:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" },
+        {
+          "name": "pis",
+          "type": "group",
+          "start": "^Pis/Pasep$",
+          "end": "^Cofins$",
+          "fields": [
+            { "name": "aliquota", "type": "labelRight", "label": "Alíquota AdValorem:", "dataType": "decimal" },
+            { "name": "valorDevido", "type": "labelRight", "label": "Valor Devido:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" },
+            { "name": "valorARecolher", "type": "labelRight", "label": "Valor a Recolher:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" }
+          ]
+        },
+        {
+          "name": "cofins",
+          "type": "group",
+          "start": "^Cofins$",
+          "fields": [
+            { "name": "aliquota", "type": "labelRight", "label": "Alíquota AdValorem:", "dataType": "decimal" },
+            { "name": "valorDevido", "type": "labelRight", "label": "Valor Devido:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" },
+            { "name": "valorARecolher", "type": "labelRight", "label": "Valor a Recolher:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" }
+          ]
+        }
+      ]
+    }
+  ]
+}

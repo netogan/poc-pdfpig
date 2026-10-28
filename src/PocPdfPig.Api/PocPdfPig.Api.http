@@ -1,0 +1,109 @@
+### Requisições prontas para testar a API (Visual Studio 2022 17.8+ ou VS Code com a extensão REST Client).
+### Rode a API (F5) e clique em "Send request" acima de cada bloco.
+### Se usar o perfil https, troque o host para https://localhost:7011
+
+@host = http://localhost:5191
+
+### Lista os PDFs de amostra
+GET {{host}}/api/samples
+
+### Lista os templates prontos
+GET {{host}}/api/templates
+
+### Mostra o JSON de um template pronto
+GET {{host}}/api/templates/dctfweb
+
+### "Raio-X" de uma amostra (como o motor enxerga linhas, células e coordenadas)
+GET {{host}}/api/samples/dctfweb.pdf/inspect
+
+### Raio-X com palavras e blocos (Docstrum), só a página 1
+GET {{host}}/api/samples/darf-irpj.pdf/inspect?pages=1&includeWords=true&includeBlocks=true
+
+### ---------------- Extração das amostras com os templates prontos ----------------
+
+### DARF IRPJ (cada página = um comprovante)
+POST {{host}}/api/samples/darf-irpj.pdf/extract/darf-comprovante-arrecadacao
+
+### DARF CSLL (mesmo template)
+POST {{host}}/api/samples/darf-csll.pdf/extract/darf-comprovante-arrecadacao
+
+### Relação de pagamentos DARF (44 páginas, 1000 linhas)
+POST {{host}}/api/samples/darf-pagamentos.pdf/extract/darf-relacao-pagamentos
+
+### DCTFWeb
+POST {{host}}/api/samples/dctfweb.pdf/extract/dctfweb
+
+### DCTF Mensal
+POST {{host}}/api/samples/dctf.pdf/extract/dctf-mensal
+
+### DCOMP (saldo negativo IRPJ)
+POST {{host}}/api/samples/dcomp1.pdf/extract/dcomp
+
+### DCOMP (saldo negativo CSLL)
+POST {{host}}/api/samples/dcomp2.pdf/extract/dcomp
+
+### PER/DCOMP - Pedido de Ressarcimento
+POST {{host}}/api/samples/perdcom.pdf/extract/perdcomp-ressarcimento
+
+### NFS-e Guarulhos (com debug: mostra onde cada valor foi encontrado)
+POST {{host}}/api/samples/nota_fiscal_servico_guarulhos_sp.pdf/extract/nfse-guarulhos?debug=true
+
+### Declaração de Importação
+POST {{host}}/api/samples/declaracao_importacao.pdf/extract/declaracao-importacao
+
+### Guia do FGTS Digital
+POST {{host}}/api/samples/guia_recisoria_fgts.pdf/extract/guia-fgts-digital
+
+### ---------------- Escrevendo um template novo ----------------
+
+### Testa um template "na hora" contra uma amostra (sem upload)
+POST {{host}}/api/samples/dctfweb.pdf/extract?debug=true
+Content-Type: application/json
+
+{
+  "name": "meu-primeiro-template",
+  "fields": [
+    { "name": "cnpj", "type": "labelRight", "label": "CNPJ" },
+    { "name": "contribuinte", "type": "labelRight", "label": "Nome do Contribuinte" },
+    { "name": "periodo", "type": "labelRight", "label": "Período apuração", "dataType": "date" },
+    {
+      "name": "debitos",
+      "type": "group",
+      "start": "^Débito Apurado e Crédito Vinculado",
+      "repeat": true,
+      "fields": [
+        { "name": "codigoReceita", "type": "labelRight", "label": "Código da Receita" },
+        { "name": "saldoAPagar", "type": "labelRight", "label": "Saldo a Pagar", "dataType": "decimal" }
+      ]
+    }
+  ]
+}
+
+### Valida um template (sem PDF) - este tem erros de propósito
+POST {{host}}/api/templates/validate
+Content-Type: application/json
+
+{
+  "fields": [
+    { "name": "cnpj", "type": "labelRight" },
+    { "name": "total", "type": "regex", "pattern": "Total (", "dataType": "money" }
+  ]
+}
+
+### ---------------- Upload de arquivo (multipart) ----------------
+### Upload pelo .http depende do suporte do editor a "< caminho-do-arquivo" em multipart.
+### Se não funcionar no seu editor, use o Swagger (POST /api/extraction) ou o curl do README.
+
+POST {{host}}/api/extraction/dctfweb
+Content-Type: multipart/form-data; boundary=POCBOUNDARY
+
+--POCBOUNDARY
+Content-Disposition: form-data; name="file"; filename="dctfweb.pdf"
+Content-Type: application/pdf
+
+< ../../pdf-amostras/dctfweb.pdf
+--POCBOUNDARY
+Content-Disposition: form-data; name="debug"
+
+false
+--POCBOUNDARY--

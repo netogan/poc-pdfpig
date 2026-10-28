@@ -1,0 +1,69 @@
+{
+  "name": "dctfweb",
+  "description": "Relatório da Declaração Completa - DCTFWeb. Rótulo e valor na mesma linha; blocos repetidos de débitos.",
+  "fields": [
+    { "name": "nomeContribuinte", "type": "labelRight", "label": "Nome do Contribuinte", "required": true },
+    { "name": "cnpj", "type": "labelRight", "label": "CNPJ", "required": true },
+    { "name": "periodoApuracao", "type": "labelRight", "label": "Período apuração", "dataType": "date" },
+    { "name": "numeroRecibo", "type": "labelRight", "label": "Número do Recibo" },
+    {
+      "name": "dataHoraTransmissao",
+      "type": "regex",
+      "description": "Rótulo 'Data/Hora da Transmissão' está quebrado em 2 linhas; mais fácil buscar o padrão de data/hora.",
+      "pattern": "(?<value>\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2})",
+      "dataType": "datetime"
+    },
+    { "name": "identificacaoApuracao", "type": "labelRight", "label": "Identificação da" },
+    { "name": "apuracaoDebitos", "type": "labelRight", "label": "Apuração de Débitos" },
+    { "name": "classificacaoTributaria", "type": "labelRight", "label": "Classificação Tributária" },
+    { "name": "reciboDeclaracaoRetificada", "type": "labelRight", "label": "Recibo da Declaração Retificada" },
+    { "name": "ausenciaFatosGeradores", "type": "labelRight", "label": "Ausência de Fatos Geradores", "dataType": "boolean" },
+    {
+      "name": "endereco",
+      "type": "group",
+      "start": "^Endereço$",
+      "end": "^Dados do Representante",
+      "fields": [
+        { "name": "logradouro", "type": "labelRight", "label": "Logradouro" },
+        { "name": "numero", "type": "labelRight", "label": "Número" },
+        { "name": "complemento", "type": "labelRight", "label": "Complemento" },
+        { "name": "bairro", "type": "labelRight", "label": "Bairro/Distrito" },
+        { "name": "municipio", "type": "labelRight", "label": "Município" },
+        { "name": "uf", "type": "labelRight", "label": "UF" },
+        { "name": "cep", "type": "labelRight", "label": "CEP" },
+        { "name": "telefone", "type": "labelRight", "label": "Telefone" },
+        { "name": "email", "type": "labelRight", "label": "Correio Eletrônico" }
+      ]
+    },
+    {
+      "name": "representante",
+      "type": "group",
+      "start": "^Dados do Representante",
+      "end": "^Dados do MIT",
+      "fields": [
+        { "name": "nome", "type": "labelRight", "labelPattern": "^Representante" },
+        { "name": "cpf", "type": "labelRight", "label": "CPF" }
+      ]
+    },
+    {
+      "name": "debitos",
+      "type": "group",
+      "description": "Cada bloco 'Débito Apurado e Crédito Vinculado' vira um item do array",
+      "start": "^Débito Apurado e Crédito Vinculado",
+      "repeat": true,
+      "fields": [
+        { "name": "codigoReceita", "type": "labelRight", "label": "Código da Receita" },
+        { "name": "descricao", "type": "labelRight", "label": "Descrição", "take": "line" },
+        {
+          "name": "periodoApuracao",
+          "type": "regex",
+          "description": "Valor fica em uma linha intermediária entre 'Período Apuração' e 'Débito'",
+          "pattern": "^Período Apuração\\n(?<value>\\d{2}/\\d{4})",
+          "dataType": "date"
+        },
+        { "name": "debitoApurado", "type": "regex", "pattern": "^Débito Apurado ([\\d.]+,\\d{2})$", "dataType": "decimal" },
+        { "name": "saldoAPagar", "type": "labelRight", "label": "Saldo a Pagar", "dataType": "decimal" }
+      ]
+    }
+  ]
+}

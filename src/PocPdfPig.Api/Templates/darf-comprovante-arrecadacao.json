@@ -1,0 +1,68 @@
+{
+  "name": "darf-comprovante-arrecadacao",
+  "description": "Comprovante de Arrecadação de DARF (Receita Federal) - serve para DARF IRPJ, CSLL etc. Cada página é um comprovante.",
+  "settings": {
+    "culture": "pt-BR"
+  },
+  "fields": [
+    {
+      "name": "comprovantes",
+      "type": "group",
+      "description": "Cada página do PDF é um comprovante independente",
+      "perPage": true,
+      "repeat": true,
+      "fields": [
+        { "name": "cnpj", "type": "labelBelow", "label": "CNPJ", "required": true },
+        { "name": "razaoSocial", "type": "labelBelow", "label": "Razão Social" },
+        { "name": "periodoApuracao", "type": "labelBelow", "label": "Período Apuração", "dataType": "date" },
+        { "name": "dataVencimento", "type": "labelBelow", "label": "Data de Vencimento", "dataType": "date" },
+        { "name": "numeroDocumento", "type": "labelBelow", "label": "Número do Documento", "required": true },
+        {
+          "name": "composicao",
+          "type": "table",
+          "description": "Tabela 'Composição do Documento de Arrecadação'. Só linhas que começam com o código de 4 dígitos.",
+          "header": "Descrição",
+          "rowPattern": "^\\d{4}\\s",
+          "end": "^Totais",
+          "columns": [
+            { "name": "codigo", "header": "Código" },
+            { "name": "descricao", "header": "Descrição" },
+            { "name": "principal", "header": "Principal", "dataType": "decimal", "nullValues": [ "-" ] },
+            { "name": "multa", "header": "Multa", "dataType": "decimal", "nullValues": [ "-" ] },
+            { "name": "juros", "header": "Juros", "dataType": "decimal", "nullValues": [ "-" ] },
+            { "name": "total", "header": "Total", "dataType": "decimal", "nullValues": [ "-" ] }
+          ]
+        },
+        {
+          "name": "totais",
+          "type": "regex",
+          "description": "A linha de totais fica logo acima da palavra 'Totais'. Cada grupo nomeado vira uma propriedade.",
+          "pattern": "^(?<principal>[\\d.]+,\\d{2}) (?<multa>[\\d.]+,\\d{2}) (?<juros>[\\d.]+,\\d{2}) (?<total>[\\d.]+,\\d{2})\\n^Totais",
+          "columns": [
+            { "name": "principal", "dataType": "decimal" },
+            { "name": "multa", "dataType": "decimal" },
+            { "name": "juros", "dataType": "decimal" },
+            { "name": "total", "dataType": "decimal" }
+          ]
+        },
+        { "name": "banco", "type": "labelBelow", "label": "Banco" },
+        { "name": "dataArrecadacao", "type": "labelBelow", "label": "Data de Arrecadação", "dataType": "date", "required": true },
+        { "name": "agencia", "type": "labelBelow", "label": "Agência" },
+        { "name": "estabelecimento", "type": "labelBelow", "label": "Estabelecimento" },
+        { "name": "valorReservadoRestituido", "type": "labelBelow", "label": "Valor Reservado/Restituído", "dataType": "decimal" },
+        {
+          "name": "emitidoEm",
+          "type": "regex",
+          "pattern": "emitido às (?<hora>\\d{2}:\\d{2}:\\d{2}) de (?<data>\\d{2}/\\d{2}/\\d{4})",
+          "columns": [ { "name": "data", "dataType": "date" } ]
+        },
+        {
+          "name": "codigoControle",
+          "type": "regex",
+          "description": "O código fica na linha seguinte a 'código de controle'",
+          "pattern": "código de controle\\n(?<value>[0-9a-f.]+)"
+        }
+      ]
+    }
+  ]
+}

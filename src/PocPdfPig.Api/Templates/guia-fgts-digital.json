@@ -1,0 +1,55 @@
+{
+  "name": "guia-fgts-digital",
+  "description": "GFD - Guia do FGTS Digital (inclui recolhimento rescisório). Rótulos acima dos valores e tabela de composição.",
+  "fields": [
+    { "name": "cnpjEmpregador", "type": "labelBelow", "label": "CPF/CNPJ do Empregador", "required": true },
+    {
+      "name": "razaoSocialEmpregador",
+      "type": "region",
+      "description": "labelBelow pegaria a data '10/07/2026' (de outro quadro, à direita e logo abaixo). Usamos uma região relativa ao rótulo: até 300pt à direita e entre 4 e 16pt abaixo dele.",
+      "label": "Nome/Razão Social do Empregador",
+      "region": { "left": 0, "right": 300, "bottom": -16, "top": -4 }
+    },
+    { "name": "dataLimitePagamento", "type": "labelBelow", "label": "Pagar este documento até", "dataType": "date" },
+    { "name": "valorARecolher", "type": "labelBelow", "label": "Valor a recolher", "dataType": "decimal", "required": true },
+    { "name": "identificador", "type": "labelBelow", "label": "Identificador" },
+    {
+      "name": "tag",
+      "type": "region",
+      "description": "Mesmo caso: o valor a recolher (à direita) cairia na coluna 'Tag' com labelBelow",
+      "label": "Tag",
+      "region": { "left": -5, "right": 120, "bottom": -16, "top": -4 }
+    },
+    {
+      "name": "composicao",
+      "type": "table",
+      "description": "O cabeçalho ocupa 2 linhas ('Quantidade'/'Trabalhadores'); usamos a linha principal.",
+      "header": "Competência",
+      "rowPattern": "^\\d{2}/\\d{4}\\s",
+      "columns": [
+        { "name": "competencia", "header": "Competência", "dataType": "date", "format": "MM/yyyy" },
+        { "name": "quantidadeTrabalhadores", "header": "Trabalhadores", "dataType": "integer" },
+        { "name": "fgtsMensal", "header": "FGTS Mensal", "dataType": "decimal" },
+        { "name": "fgtsRescisorio", "header": "FGTS Rescisório", "dataType": "decimal" },
+        { "name": "indenizacaoCompensatoria", "header": "Compensatória", "dataType": "decimal" },
+        { "name": "encargosFgts", "header": "Encargos FGTS", "dataType": "decimal" },
+        { "name": "total", "header": "Total", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "totalFgts",
+      "type": "regex",
+      "pattern": "^Total FGTS: (?<fgtsMensal>[\\d.]+,\\d{2}) (?<fgtsRescisorio>[\\d.]+,\\d{2}) (?<indenizacaoCompensatoria>[\\d.]+,\\d{2}) (?<encargosFgts>[\\d.]+,\\d{2}) (?<total>[\\d.]+,\\d{2})$",
+      "columns": [
+        { "name": "fgtsMensal", "dataType": "decimal" },
+        { "name": "fgtsRescisorio", "dataType": "decimal" },
+        { "name": "indenizacaoCompensatoria", "dataType": "decimal" },
+        { "name": "encargosFgts", "dataType": "decimal" },
+        { "name": "total", "dataType": "decimal" }
+      ]
+    },
+    { "name": "totalGuia", "type": "labelRight", "label": "Total da Guia:", "dataType": "decimal" },
+    { "name": "dataGeracao", "type": "regex", "pattern": "Data de geração da Guia: (?<value>\\d{2}/\\d{2}/\\d{4} às \\d{2}:\\d{2}:\\d{2})", "dataType": "datetime", "format": "dd/MM/yyyy 'às' HH:mm:ss" },
+    { "name": "pixCopiaECola", "type": "regex", "pattern": "^PIX Copia e Cola:\\n(?<value>.+)$" }
+  ]
+}

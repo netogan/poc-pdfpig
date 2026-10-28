@@ -1,0 +1,96 @@
+{
+  "name": "dcomp",
+  "description": "PER/DCOMP - Declaração de Compensação (saldo negativo IRPJ/CSLL etc.) com débitos que atravessam páginas.",
+  "fields": [
+    { "name": "cnpj", "type": "labelRight", "labelPattern": "^CNPJ(?= \\d)", "required": true },
+    { "name": "numeroPerDcomp", "type": "regex", "pattern": "(?<value>\\d{5}\\.\\d{5}\\.\\d{6}\\.\\d\\.\\d\\.\\d{2}-\\d{4})", "required": true },
+    { "name": "versaoPrograma", "type": "regex", "pattern": "PERDCOMP (?<value>[\\d.]+)" },
+    { "name": "nomeEmpresarial", "type": "labelRight", "label": "Nome Empresarial", "multiline": true },
+    { "name": "dataCriacao", "type": "labelRight", "label": "Data de Criação", "dataType": "date" },
+    { "name": "dataTransmissao", "type": "labelRight", "label": "Data de Transmissão", "dataType": "date" },
+    { "name": "tipoDocumento", "type": "labelRight", "label": "Tipo de Documento" },
+    { "name": "tipoCredito", "type": "labelRight", "label": "Tipo de Crédito" },
+    { "name": "retificador", "type": "labelRight", "label": "PER/DCOMP Retificador", "dataType": "boolean" },
+    { "name": "creditoAcaoJudicial", "type": "labelRight", "label": "Crédito Oriundo de Ação Judicial", "dataType": "boolean" },
+    { "name": "qualificacaoContribuinte", "type": "labelRight", "label": "Qualificação do Contribuinte" },
+    {
+      "name": "responsavelPJ",
+      "type": "group",
+      "start": "^Dados do Responsável da Pessoa Jurídica Perante",
+      "end": "^Dados do Responsável pelo Preenchimento",
+      "fields": [
+        { "name": "nome", "type": "labelRight", "labelPattern": "^Nome\\b" },
+        { "name": "cpf", "type": "labelRight", "labelPattern": "^CPF\\b" }
+      ]
+    },
+    {
+      "name": "responsavelPreenchimento",
+      "type": "group",
+      "start": "^Dados do Responsável pelo Preenchimento",
+      "end": "^\\d+$",
+      "fields": [
+        { "name": "nome", "type": "labelRight", "labelPattern": "^Nome\\b" },
+        { "name": "cpf", "type": "labelRight", "labelPattern": "^CPF\\b" },
+        { "name": "crc", "type": "labelRight", "labelPattern": "^CRC\\b" },
+        { "name": "uf", "type": "labelRight", "labelPattern": "^UF\\b" },
+        { "name": "telefone", "type": "labelRight", "label": "Telefone Fixo" },
+        { "name": "email", "type": "labelRight", "label": "Endereço Eletrônico" }
+      ]
+    },
+    {
+      "name": "credito",
+      "type": "group",
+      "description": "Quadro 'CRÉDITO SALDO NEGATIVO DE ...'. (?-i) liga a diferenciação de maiúsculas só nesta regex, para não casar com 'Crédito Oriundo...'",
+      "start": "(?-i)^CRÉDITO ",
+      "end": "^\\d+$",
+      "fields": [
+        { "name": "descricao", "type": "regex", "pattern": "(?-i)^(?<value>CRÉDITO .+)$" },
+        { "name": "informadoEmOutroPerDcomp", "type": "labelRight", "label": "Informado em Outro PER/DCOMP", "dataType": "boolean" },
+        { "name": "perDcompInicial", "type": "labelRight", "label": "Nº do PER/DCOMP Inicial" },
+        { "name": "formaTributacao", "type": "labelRight", "labelPattern": "^Forma de Tributação( do Lucro| no Período)?", "description": "O rótulo varia entre documentos; a parte entre parênteses é opcional" },
+        { "name": "formaApuracao", "type": "labelRight", "label": "Forma de Apuração" },
+        { "name": "exercicio", "type": "labelRight", "label": "Exercício", "dataType": "integer" },
+        { "name": "dataInicialPeriodo", "type": "labelRight", "label": "Data Inicial do Período", "dataType": "date" },
+        { "name": "dataFinalPeriodo", "type": "labelRight", "label": "Data Final do Período", "dataType": "date" },
+        { "name": "selicAcumulada", "type": "labelRight", "label": "Selic Acumulada", "dataType": "decimal" },
+        { "name": "valorSaldoNegativo", "type": "labelRight", "label": "Valor do Saldo Negativo", "dataType": "decimal" },
+        { "name": "creditoOriginalDataEntrega", "type": "labelRight", "label": "Crédito Original na Data da Entrega", "dataType": "decimal" },
+        { "name": "creditoAtualizado", "type": "labelRight", "label": "Crédito Atualizado", "dataType": "decimal" },
+        { "name": "totalDebitosDcomp", "type": "labelRight", "label": "Total dos débitos desta DCOMP", "dataType": "decimal" },
+        { "name": "totalCreditoOriginalUtilizado", "type": "labelRight", "label": "Total do Crédito Original Utilizado nesta DCOMP", "dataType": "decimal" },
+        { "name": "saldoCreditoOriginal", "type": "labelRight", "label": "Saldo do Crédito Original", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "debitos",
+      "type": "group",
+      "description": "Cada '001. Débito ...' é um item. Cabeçalho/rodapé de página são ignorados para o bloco 'atravessar' páginas.",
+      "start": "^\\d{3}\\. Débito",
+      "repeat": true,
+      "ignoreLines": [
+        "^Receita Federal do Brasil$",
+        "^PEDIDO DE RESTITUIÇÃO",
+        "^CNPJ [\\d./-]+ [\\d.-]+$",
+        "^\\d+$"
+      ],
+      "fields": [
+        { "name": "descricao", "type": "regex", "pattern": "^\\d{3}\\. (?<value>Débito .+)$" },
+        { "name": "cnpjDetentor", "type": "labelRight", "label": "CNPJ do Detentor do Débito" },
+        { "name": "grupoTributo", "type": "labelRight", "label": "Grupo de Tributo" },
+        { "name": "codigoReceita", "type": "labelRight", "label": "Código da Receita/Denominação", "multiline": true },
+        { "name": "debitoControladoProcesso", "type": "labelRight", "label": "Débito Controlado em Processo", "dataType": "boolean" },
+        { "name": "periodoApuracao", "type": "labelRight", "label": "Período de Apuração", "dataType": "date" },
+        { "name": "periodicidade", "type": "labelRight", "label": "Periodicidade", "description": "1ª ocorrência no bloco (a 2ª é 'Periodicidade DCTFWeb')" },
+        { "name": "dataVencimento", "type": "labelRight", "label": "Data de Vencimento do Tributo/Quota", "dataType": "date" },
+        { "name": "reciboDctfweb", "type": "labelRight", "label": "Número do Recibo de Transmissão DCTFWeb" },
+        { "name": "dataTransmissaoDctfweb", "type": "labelRight", "label": "Data de Transmissão DCTFWeb", "dataType": "date" },
+        { "name": "periodoApuracaoDctfweb", "type": "labelRight", "label": "Período Apuração DCTFWeb", "dataType": "date" },
+        { "name": "principal", "type": "labelRight", "labelPattern": "^Principal\\b", "dataType": "decimal" },
+        { "name": "multa", "type": "labelRight", "labelPattern": "^Multa\\b", "dataType": "decimal" },
+        { "name": "juros", "type": "labelRight", "labelPattern": "^Juros\\b", "dataType": "decimal" },
+        { "name": "total", "type": "labelRight", "labelPattern": "^Total\\b", "dataType": "decimal" }
+      ]
+    },
+    { "name": "totalDebitos", "type": "labelRight", "labelPattern": "^TOTAL\\b", "occurrence": -1, "dataType": "decimal" }
+  ]
+}

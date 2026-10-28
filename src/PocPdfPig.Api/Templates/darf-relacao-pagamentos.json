@@ -1,0 +1,35 @@
+{
+  "name": "darf-relacao-pagamentos",
+  "description": "Relação de pagamentos (DARF) emitida pela Receita - tabela que continua por várias páginas.",
+  "fields": [
+    { "name": "cnpjContribuinte", "type": "labelRight", "label": "Contribuinte:", "required": true },
+    {
+      "name": "periodoConsulta",
+      "type": "regex",
+      "pattern": "Data de arrecadação: (?<inicio>\\d{2}/\\d{2}/\\d{4}) a (?<fim>\\d{2}/\\d{2}/\\d{4})",
+      "columns": [
+        { "name": "inicio", "dataType": "date" },
+        { "name": "fim", "dataType": "date" }
+      ]
+    },
+    { "name": "tipoDocumento", "type": "labelRight", "label": "Tipo do documento:" },
+    { "name": "emitidoEm", "type": "labelRight", "label": "Emissão em", "dataType": "datetime", "format": "dd/MM/yyyy HH:mm" },
+    {
+      "name": "pagamentos",
+      "type": "table",
+      "description": "O cabeçalho se repete em todas as páginas; o motor reaproveita automaticamente.",
+      "header": "Data de Arrecadação",
+      "rowPattern": "^\\d{2}/\\d{2}/\\d{4}\\s",
+      "columns": [
+        { "name": "dataArrecadacao", "header": "Data de Arrecadação", "dataType": "date" },
+        { "name": "receita", "header": "Receita" },
+        { "name": "numeroDocumento", "header": "N° Documento" },
+        { "name": "periodoApuracao", "header": "Período de Apuração", "dataType": "date" },
+        { "name": "principal", "header": "Principal (R$)", "dataType": "decimal" },
+        { "name": "multa", "header": "Multa (R$)", "dataType": "decimal" },
+        { "name": "juros", "header": "Juros (R$)", "dataType": "decimal" },
+        { "name": "total", "header": "Total (R$)", "dataType": "decimal" }
+      ]
+    }
+  ]
+}

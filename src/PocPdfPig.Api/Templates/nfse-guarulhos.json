@@ -1,0 +1,70 @@
+{
+  "name": "nfse-guarulhos",
+  "description": "NFS-e da Prefeitura de Guarulhos (GINFES). Mistura rótulos à direita, rótulos acima e quadros de valores.",
+  "fields": [
+    { "name": "numeroNfse", "type": "labelBelow", "label": "NFS-e", "description": "Primeira ocorrência de 'NFS-e' é o título da caixa do número", "required": true },
+    { "name": "dataHoraEmissao", "type": "labelRight", "label": "Data e Hora da Emissão", "dataType": "datetime" },
+    { "name": "competencia", "type": "labelRight", "label": "Competência", "dataType": "date" },
+    { "name": "codigoVerificacao", "type": "labelBelow", "label": "Código de Verificação" },
+    { "name": "numeroRps", "type": "labelRight", "label": "Número do RPS" },
+    { "name": "localPrestacao", "type": "labelRight", "label": "Local da Prestação" },
+    {
+      "name": "prestador",
+      "type": "group",
+      "start": "^Dados do Prestador de Serviços",
+      "end": "^Dados do Tomador de Serviços",
+      "fields": [
+        { "name": "razaoSocial", "type": "labelRight", "label": "Razão Social/Nome" },
+        { "name": "nomeFantasia", "type": "labelRight", "label": "Nome Fantasia" },
+        { "name": "cnpjCpf", "type": "labelRight", "label": "CNPJ/CPF", "required": true },
+        { "name": "inscricaoMunicipal", "type": "labelRight", "label": "Inscrição Municipal" },
+        { "name": "municipio", "type": "labelRight", "label": "Município" },
+        { "name": "endereco", "type": "labelRight", "label": "Endereço e Cep", "take": "line" },
+        { "name": "cep", "type": "regex", "pattern": "CEP: (?<value>\\d{5}-\\d{3})" },
+        { "name": "telefone", "type": "labelRight", "label": "Telefone:" },
+        { "name": "email", "type": "labelRight", "label": "e-mail:" }
+      ]
+    },
+    {
+      "name": "tomador",
+      "type": "group",
+      "start": "^Dados do Tomador de Serviços",
+      "end": "^Discriminação dos Serviços",
+      "fields": [
+        { "name": "razaoSocial", "type": "labelRight", "label": "Razão Social/Nome" },
+        { "name": "cnpjCpf", "type": "labelRight", "label": "CNPJ/CPF", "required": true },
+        { "name": "inscricaoMunicipal", "type": "labelRight", "label": "Inscrição Municipal", "description": "Vazio neste PDF: o valor à direita é outro rótulo, por isso o valuePattern exige dígitos", "valuePattern": "^\\d+$" },
+        { "name": "municipio", "type": "labelRight", "label": "Município" },
+        { "name": "endereco", "type": "labelRight", "label": "Endereço e CEP", "take": "line" },
+        { "name": "complemento", "type": "labelRight", "label": "Complemento:" },
+        { "name": "email", "type": "labelRight", "label": "e-mail:" }
+      ]
+    },
+    {
+      "name": "discriminacao",
+      "type": "regex",
+      "description": "Texto livre (várias linhas) entre 'Discriminação dos Serviços' e 'Código do Serviço'",
+      "pattern": "^Discriminação dos Serviços\\n(?<value>[\\s\\S]*?)\\n^Código do Serviço"
+    },
+    { "name": "valorTotal", "type": "regex", "pattern": "Valor Total: R\\$ (?<value>[\\d.]+,\\d{2})", "dataType": "decimal", "required": true },
+    { "name": "vencimento", "type": "regex", "pattern": "Vencimento: (?<value>\\d{2}/\\d{2}/\\d{4})", "dataType": "date" },
+    { "name": "codigoServico", "type": "labelBelow", "label": "Código do Serviço / Atividade" },
+    {
+      "name": "valores",
+      "type": "group",
+      "start": "^Detalhamento de Valores",
+      "fields": [
+        { "name": "valorServicos", "type": "labelRight", "label": "Valor dos Serviços", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" },
+        { "name": "naturezaOperacao", "type": "labelBelow", "label": "Natureza Operação" },
+        { "name": "regimeEspecialTributacao", "type": "labelBelow", "label": "Regime especial Tributação" },
+        { "name": "optanteSimplesNacional", "type": "labelBelow", "label": "Opção Simples Nacional" },
+        { "name": "retencoesFederais", "type": "labelRight", "label": "(-) Retenções Federais", "dataType": "decimal" },
+        { "name": "baseCalculo", "type": "labelRight", "label": "Base de Cálculo", "dataType": "decimal" },
+        { "name": "aliquota", "type": "labelRight", "label": "Alíquota %", "dataType": "decimal" },
+        { "name": "issRetido", "type": "regex", "pattern": "ISS a reter:.*\\(X\\) ?(?<value>Sim|Não)", "dataType": "boolean" },
+        { "name": "valorIss", "type": "labelRight", "label": "(=) Valor do ISS:", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" },
+        { "name": "valorLiquido", "type": "labelRight", "label": "(=) Valor Líquido", "take": "line", "valuePattern": "[\\d.]+,\\d{2}", "dataType": "decimal" }
+      ]
+    }
+  ]
+}

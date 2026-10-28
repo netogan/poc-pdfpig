@@ -1,0 +1,98 @@
+{
+  "name": "perdcomp-ressarcimento",
+  "description": "PER/DCOMP - Pedido de Ressarcimento (ex.: Cofins/PIS Não-Cumulativa) com consolidação dos créditos e saldo mensal.",
+  "fields": [
+    { "name": "cnpj", "type": "labelRight", "labelPattern": "^CNPJ(?= \\d)", "required": true },
+    { "name": "numeroPerDcomp", "type": "regex", "pattern": "(?<value>\\d{5}\\.\\d{5}\\.\\d{6}\\.\\d\\.\\d\\.\\d{2}-\\d{4})", "required": true },
+    { "name": "nomeEmpresarial", "type": "labelRight", "label": "Nome Empresarial", "multiline": true },
+    { "name": "dataCriacao", "type": "labelRight", "label": "Data de Criação", "dataType": "date" },
+    { "name": "dataTransmissao", "type": "labelRight", "label": "Data de Transmissão", "dataType": "date" },
+    { "name": "tipoDocumento", "type": "labelRight", "label": "Tipo de Documento" },
+    { "name": "tipoCredito", "type": "labelRight", "label": "Tipo de Crédito" },
+    { "name": "retificador", "type": "labelRight", "label": "PER/DCOMP Retificador", "dataType": "boolean" },
+    {
+      "name": "dadosBancarios",
+      "type": "group",
+      "start": "^Tipo da Conta",
+      "end": "^Qualificação do Contribuinte",
+      "fields": [
+        { "name": "tipoConta", "type": "labelRight", "label": "Tipo da Conta" },
+        { "name": "banco", "type": "labelRight", "labelPattern": "^Banco\\b" },
+        { "name": "agencia", "type": "labelRight", "labelPattern": "^Agência\\b" },
+        { "name": "conta", "type": "labelRight", "label": "N° Conta" }
+      ]
+    },
+    {
+      "name": "responsavelPJ",
+      "type": "group",
+      "start": "^Dados do Responsável da Pessoa Jurídica Perante",
+      "end": "^Dados do Responsável pelo Preenchimento",
+      "fields": [
+        { "name": "nome", "type": "labelRight", "labelPattern": "^Nome\\b" },
+        { "name": "cpf", "type": "labelRight", "labelPattern": "^CPF\\b" },
+        { "name": "email", "type": "labelRight", "label": "Endereço Eletrônico" }
+      ]
+    },
+    {
+      "name": "credito",
+      "type": "group",
+      "start": "^Informado em Processo Administrativo",
+      "end": "^CONSOLIDAÇÃO DOS CRÉDITOS",
+      "fields": [
+        { "name": "informadoProcessoAdministrativo", "type": "labelRight", "label": "Informado em Processo Administrativo Anterior", "dataType": "boolean" },
+        { "name": "informadoOutroPerDcomp", "type": "labelRight", "label": "Informado em Outro PER/DCOMP", "dataType": "boolean" },
+        { "name": "formaTributacao", "type": "labelRight", "labelPattern": "^Forma de Tributação( do Lucro| no Período)?", "description": "O rótulo varia entre documentos; a parte entre parênteses é opcional" },
+        { "name": "ano", "type": "labelRight", "labelPattern": "^Ano\\b", "dataType": "integer" },
+        { "name": "trimestre", "type": "labelRight", "label": "Trimestre" },
+        { "name": "valorOriginalCreditoInicial", "type": "labelRight", "label": "Valor Original do Crédito Inicial", "dataType": "decimal" },
+        { "name": "creditoPassivelRessarcimento", "type": "labelRight", "label": "Crédito Passível de Ressarcimento", "dataType": "decimal" },
+        { "name": "valorPedidoRessarcimento", "type": "labelRight", "label": "Valor do Pedido de Ressarcimento", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "consolidacaoCreditos",
+      "type": "group",
+      "start": "^\\d{4}\\. Código do Crédito",
+      "end": "^TOTAL$",
+      "repeat": true,
+      "fields": [
+        { "name": "codigoCredito", "type": "labelRight", "label": "Código do Crédito", "multiline": true },
+        { "name": "valorCreditoApurado", "type": "labelRight", "label": "Valor do Crédito Apurado", "dataType": "decimal" },
+        { "name": "valorDeducoesDescontos", "type": "labelRight", "label": "Valor das Deduções ou Descontos", "dataType": "decimal" },
+        { "name": "valorUtilizadoDcompsAnteriores", "type": "labelRight", "label": "Valor Utilizado em Dcomps Anteriores", "dataType": "decimal" },
+        { "name": "saldoCredito", "type": "labelRight", "label": "Saldo do Crédito", "dataType": "decimal" },
+        { "name": "valorUtilizadoNesteDocumento", "type": "labelRight", "label": "Valor do Crédito Utilizado Neste Documento", "dataType": "decimal" }
+      ]
+    },
+    {
+      "name": "saldoCredito",
+      "type": "group",
+      "description": "Quadro 'SALDO DO CRÉDITO' (maiúsculas, por isso o (?-i)). Dentro dele, um bloco por código de crédito.",
+      "start": "(?-i)^SALDO DO CRÉDITO$",
+      "ignoreLines": [ "^Receita Federal do Brasil$", "^PEDIDO DE RESTITUIÇÃO", "^CNPJ [\\d./-]+ [\\d.-]+$", "^\\d+$" ],
+      "fields": [
+        {
+          "name": "creditos",
+          "type": "group",
+          "start": "^\\d{3} - Crédito",
+          "repeat": true,
+          "fields": [
+            { "name": "credito", "type": "regex", "pattern": "^(?<value>\\d{3} - Crédito .+)$" },
+            {
+              "name": "valores",
+              "type": "table",
+              "description": "Os meses variam conforme o trimestre: colunas automáticas (includeOtherColumns) + coluna fixa para a descrição",
+              "headerPattern": "^(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)\\b",
+              "rowPattern": "\\d,\\d{2}$",
+              "includeOtherColumns": true,
+              "columns": [
+                { "name": "descricao", "left": 0, "right": 260 },
+                { "name": "*", "dataType": "decimal", "description": "'*' define o tipo das colunas automáticas (os meses)" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

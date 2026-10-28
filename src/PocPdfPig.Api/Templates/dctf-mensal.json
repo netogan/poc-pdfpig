@@ -1,0 +1,113 @@
+{
+  "name": "dctf-mensal",
+  "description": "DCTF Mensal 3.6 - dados iniciais, cadastro, responsáveis e débitos (com DARFs vinculados) que atravessam páginas.",
+  "settings": {
+    "ignoreLines": [
+      "^MINISTÉRIO DA ECONOMIA",
+      "^SECRETARIA DA RECEITA FEDERAL",
+      "^D C T F MENSAL",
+      "^\\*+ FIM DE IMPRESSÃO"
+    ]
+  },
+  "fields": [
+    { "name": "cnpj", "type": "labelRight", "label": "CNPJ:", "required": true },
+    { "name": "mesAno", "type": "labelRight", "label": "Mês/Ano:", "dataType": "date", "format": "MMM yyyy" },
+    {
+      "name": "periodo",
+      "type": "regex",
+      "pattern": "^Período: (?<inicio>\\d{2}/\\d{2}/\\d{4}) a (?<fim>\\d{2}/\\d{2}/\\d{4})",
+      "columns": [
+        { "name": "inicio", "dataType": "date" },
+        { "name": "fim", "dataType": "date" }
+      ]
+    },
+    { "name": "retificadora", "type": "labelRight", "label": "Declaração Retificadora:", "dataType": "boolean" },
+    { "name": "reciboRetificada", "type": "labelRight", "label": "a ser retificada:" },
+    { "name": "situacao", "type": "labelRight", "label": "Situação:" },
+    { "name": "formaTributacaoLucro", "type": "labelRight", "label": "Forma de Tributação do Lucro:" },
+    { "name": "qualificacaoPJ", "type": "labelRight", "label": "Qualificação da Pessoa Jurídica:" },
+    { "name": "regimePisCofins", "type": "labelRight", "label": "PIS/Pasep e/ou da Cofins:" },
+    { "name": "nomeEmpresarial", "type": "labelBelow", "label": "Nome Empresarial:" },
+    {
+      "name": "endereco",
+      "type": "group",
+      "start": "^Logradouro:",
+      "end": "^Correio Eletrônico:",
+      "fields": [
+        { "name": "logradouro", "type": "labelRight", "label": "Logradouro:" },
+        { "name": "numero", "type": "labelRight", "label": "Número:" },
+        { "name": "complemento", "type": "labelRight", "label": "Complemento:" },
+        { "name": "bairro", "type": "labelRight", "label": "Bairro/Distrito:" },
+        { "name": "municipio", "type": "labelRight", "label": "Município:" },
+        { "name": "uf", "type": "labelRight", "label": "UF:" },
+        { "name": "cep", "type": "labelRight", "label": "CEP:" }
+      ]
+    },
+    {
+      "name": "representante",
+      "type": "group",
+      "start": "^Dados do Representante",
+      "end": "^Dados do Responsável",
+      "fields": [
+        { "name": "nome", "type": "labelRight", "label": "Nome:" },
+        { "name": "cpf", "type": "labelRight", "label": "CPF:" }
+      ]
+    },
+    {
+      "name": "responsavelPreenchimento",
+      "type": "group",
+      "start": "^Dados do Responsável pelo Preenchimento",
+      "end": "^Débito Apurado e Créditos",
+      "fields": [
+        { "name": "nome", "type": "labelRight", "label": "Nome:" },
+        { "name": "cpf", "type": "labelRight", "label": "CPF:" },
+        { "name": "crc", "type": "labelRight", "label": "Inscrição no CRC:" },
+        { "name": "email", "type": "labelRight", "label": "Correio Eletrônico:" }
+      ]
+    },
+    {
+      "name": "debitos",
+      "type": "group",
+      "description": "Um bloco por 'GRUPO DO TRIBUTO'. Os blocos atravessam páginas: o cabeçalho de continuação é ignorado.",
+      "start": "^GRUPO DO TRIBUTO:",
+      "repeat": true,
+      "ignoreLines": [
+        "^CNPJ: [\\d./-]+ \\w{3}/\\d{4} Página",
+        "^CÓDIGO DA RECEITA: .* PERÍODO DE APURAÇÃO:",
+        "^Débito Apurado e Créditos Vinculados"
+      ],
+      "fields": [
+        { "name": "grupoTributo", "type": "labelRight", "label": "GRUPO DO TRIBUTO:", "multiline": true },
+        { "name": "codigoReceita", "type": "labelRight", "label": "CÓDIGO DA RECEITA:" },
+        { "name": "denominacao", "type": "labelRight", "label": "DENOMINAÇÃO:", "multiline": true },
+        { "name": "periodicidade", "type": "labelRight", "label": "PERIODICIDADE:" },
+        { "name": "periodoApuracao", "type": "labelRight", "label": "PERÍODO DE APURAÇÃO:", "dataType": "date", "format": "MMMM / yyyy" },
+        { "name": "debitoApurado", "type": "labelRight", "label": "DÉBITO APURADO", "dataType": "decimal" },
+        { "name": "pagamento", "type": "labelRight", "label": "- PAGAMENTO", "dataType": "decimal" },
+        { "name": "compensacoes", "type": "labelRight", "label": "- COMPENSAÇÕES", "dataType": "decimal" },
+        { "name": "parcelamento", "type": "labelRight", "label": "- PARCELAMENTO", "dataType": "decimal" },
+        { "name": "suspensao", "type": "labelRight", "label": "- SUSPENSÃO", "dataType": "decimal" },
+        { "name": "somaCreditosVinculados", "type": "labelRight", "label": "SOMA DOS CRÉDITOS VINCULADOS", "dataType": "decimal" },
+        { "name": "saldoAPagar", "type": "labelRight", "label": "SALDO A PAGAR DO DÉBITO", "dataType": "decimal" },
+        { "name": "numeroDcomp", "type": "labelRight", "label": "N° da DComp:" },
+        {
+          "name": "darfs",
+          "type": "group",
+          "description": "Grupo dentro de grupo: cada 'Relação de DARF vinculados ao Débito' do débito atual",
+          "start": "^Relação de DARF vinculados",
+          "repeat": true,
+          "fields": [
+            { "name": "periodoApuracao", "type": "labelRight", "label": "PA:", "dataType": "date" },
+            { "name": "codigoReceita", "type": "labelRight", "label": "Código da Receita:" },
+            { "name": "dataVencimento", "type": "labelRight", "label": "Data de Vencimento:", "dataType": "date" },
+            { "name": "valorPrincipal", "type": "labelRight", "label": "Valor do Principal:", "dataType": "decimal" },
+            { "name": "valorMulta", "type": "labelRight", "label": "Valor da Multa:", "dataType": "decimal" },
+            { "name": "valorJuros", "type": "labelRight", "label": "Valor dos Juros:", "dataType": "decimal" },
+            { "name": "valorTotal", "type": "labelRight", "label": "Valor Total do DARF:", "dataType": "decimal" },
+            { "name": "valorPago", "type": "labelRight", "label": "Valor Pago do Débito:", "dataType": "decimal" }
+          ]
+        }
+      ]
+    }
+  ]
+}
